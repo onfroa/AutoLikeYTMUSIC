@@ -17,5 +17,5 @@ This JavaScript script automates liking songs in a YouTube Music playlist. It sc
 1. Open the playlist you want to like in your browser (Chrome or any Chromium-based browser recommended)
 2. Press `Ctrl` + `Shift` + `J` to open the Developer Console
 3. If pasting is blocked, manually type `allow pasting` and press `Enter` to enable it
-4. Copy the script from `autoLikeSongs.js` and paste it into the console, then press `Enter`
+4. Copy the `Script` and paste it into the console, then press `Enter`
 5. Done
