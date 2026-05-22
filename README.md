@@ -1,4 +1,4 @@
-# YouTube Music Playlist Liker Script
+# YouTube Music Auto Like Playlist Script
 
 This JavaScript script automates liking songs in a YouTube Music playlist. It scrolls through the entire playlist to load all songs, skips already-liked ones, and verifies each like before moving on.
 
