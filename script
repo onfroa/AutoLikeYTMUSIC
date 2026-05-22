@@ -1,4 +1,4 @@
-```javascript
+javascript
 async function autoLikeSongs() {
 
     async function scrollToLoadAll() {
@@ -115,4 +115,3 @@ async function autoLikeSongs() {
 }
 
 autoLikeSongs();
-```
