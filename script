@@ -1,29 +1,22 @@
 async function autoLikeSongs() {
-
     async function scrollToLoadAll() {
         const container =
             document.querySelector('ytmusic-section-list-renderer') ||
             document.querySelector('#contents') ||
             document.querySelector('ytmusic-playlist-shelf-renderer') ||
             document.scrollingElement;
-
         let lastCount = 0;
         let unchangedRounds = 0;
-
         console.log('Scrolling to load all songs...');
-
         while (unchangedRounds < 4) {
             if (container && container !== document.scrollingElement) {
                 container.scrollTop = container.scrollHeight;
             }
             document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight;
-
             await new Promise(r => setTimeout(r, 1500));
-
             const currentCount = document.querySelectorAll(
                 'ytmusic-responsive-list-item-renderer'
             ).length;
-
             if (currentCount === lastCount) {
                 unchangedRounds++;
             } else {
@@ -32,15 +25,12 @@ async function autoLikeSongs() {
             }
             lastCount = currentCount;
         }
-
         document.scrollingElement.scrollTop = 0;
         await new Promise(r => setTimeout(r, 1000));
         console.log(`Done scrolling. Total rows found: ${lastCount}`);
     }
-
     function isAlreadyLiked(btn) {
         if (btn.getAttribute('aria-pressed') === 'true') return true;
-
         return (
             btn.classList.contains('active') ||
             btn.classList.contains('style-default-active') ||
@@ -48,7 +38,6 @@ async function autoLikeSongs() {
             btn.closest('[class*="liked"]') !== null
         );
     }
-
     function collectUnlikedButtons() {
         const candidates = document.querySelectorAll('button, tp-yt-paper-icon-button');
         return Array.from(candidates).filter(btn => {
@@ -57,30 +46,23 @@ async function autoLikeSongs() {
                 btn.getAttribute('title') ||
                 ''
             ).toLowerCase();
-
             const isLikeButton = label.includes('like') && !label.includes('dislike');
             if (!isLikeButton) return false;
-
             if (isAlreadyLiked(btn)) {
                 console.log(`  Skipping already-liked: "${label}"`);
                 return false;
             }
-
             return btn.getAttribute('aria-pressed') === 'false';
         });
     }
-
     async function clickAndVerify(btn, index, total) {
         btn.scrollIntoView({ block: 'center' });
         await new Promise(r => setTimeout(r, 300));
-
         if (isAlreadyLiked(btn)) {
             console.log(`  Skipping song ${index + 1} — already liked on recheck`);
             return;
         }
-
         btn.click();
-
         await new Promise(r => setTimeout(r, 600));
         if (btn.getAttribute('aria-pressed') === 'true') {
             console.log(`✓ Liked song ${index + 1}/${total}`);
@@ -88,18 +70,13 @@ async function autoLikeSongs() {
             console.warn(`⚠ Song ${index + 1} didn't confirm like — skipping`);
         }
     }
-
     await scrollToLoadAll();
-
     const likeButtons = collectUnlikedButtons();
-
     if (likeButtons.length === 0) {
         console.log("No unliked songs found. Make sure you're on a playlist page.");
         return;
     }
-
     console.log(`Found ${likeButtons.length} unliked songs. Starting...`);
-
     for (let i = 0; i < likeButtons.length; i++) {
         try {
             await clickAndVerify(likeButtons[i], i, likeButtons.length);
@@ -109,8 +86,6 @@ async function autoLikeSongs() {
             console.error(`✗ Error on song ${i + 1}:`, err);
         }
     }
-
     console.log('🎉 All done!');
 }
-
 autoLikeSongs();
