@@ -1,17 +1,9 @@
 async function autoLikeSongs() {
     async function scrollToLoadAll() {
-        const container =
-            document.querySelector('ytmusic-section-list-renderer') ||
-            document.querySelector('#contents') ||
-            document.querySelector('ytmusic-playlist-shelf-renderer') ||
-            document.scrollingElement;
         let lastCount = 0;
         let unchangedRounds = 0;
         console.log('Scrolling to load all songs...');
         while (unchangedRounds < 4) {
-            if (container && container !== document.scrollingElement) {
-                container.scrollTop = container.scrollHeight;
-            }
             document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight;
             await new Promise(r => setTimeout(r, 1500));
             const currentCount = document.querySelectorAll(
@@ -29,6 +21,7 @@ async function autoLikeSongs() {
         await new Promise(r => setTimeout(r, 1000));
         console.log(`Done scrolling. Total rows found: ${lastCount}`);
     }
+
     function isAlreadyLiked(btn) {
         if (btn.getAttribute('aria-pressed') === 'true') return true;
         return (
@@ -38,23 +31,39 @@ async function autoLikeSongs() {
             btn.closest('[class*="liked"]') !== null
         );
     }
+
     function collectUnlikedButtons() {
-        const candidates = document.querySelectorAll('button, tp-yt-paper-icon-button');
+        const playlistShelf = document.querySelector('ytmusic-playlist-shelf-renderer');
+        if (!playlistShelf) {
+            console.error('❌ Could not find ytmusic-playlist-shelf-renderer. Are you on a playlist page?');
+            return [];
+        }
+
+        const candidates = playlistShelf.querySelectorAll('button, tp-yt-paper-icon-button');
+
         return Array.from(candidates).filter(btn => {
             const label = (
                 btn.getAttribute('aria-label') ||
                 btn.getAttribute('title') ||
                 ''
             ).toLowerCase();
-            const isLikeButton = label.includes('like') && !label.includes('dislike');
-            if (!isLikeButton) return false;
+            if (!label.includes('like') || label.includes('dislike')) return false;
+
+            const inPlaylistRow = btn.closest('ytmusic-responsive-list-item-renderer');
+            if (!inPlaylistRow) {
+                console.log(`  Skipping — not in a playlist row: "${label}"`);
+                return false;
+            }
+
             if (isAlreadyLiked(btn)) {
                 console.log(`  Skipping already-liked: "${label}"`);
                 return false;
             }
+
             return btn.getAttribute('aria-pressed') === 'false';
         });
     }
+
     async function clickAndVerify(btn, index, total) {
         btn.scrollIntoView({ block: 'center' });
         await new Promise(r => setTimeout(r, 300));
@@ -70,10 +79,11 @@ async function autoLikeSongs() {
             console.warn(`⚠ Song ${index + 1} didn't confirm like — skipping`);
         }
     }
+
     await scrollToLoadAll();
     const likeButtons = collectUnlikedButtons();
     if (likeButtons.length === 0) {
-        console.log("No unliked songs found. Make sure you're on a playlist page.");
+        console.log("No unliked songs found.");
         return;
     }
     console.log(`Found ${likeButtons.length} unliked songs. Starting...`);
